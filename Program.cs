@@ -45,16 +45,7 @@ app.UseCors();
 //        return await next(context);
 //    });
 
-app.MapPost("/users", ([FromServices] TodoStorage storage) =>
-{
-    var todoList = new List<Todo>();
-    var user = Guid.NewGuid();
-    var wasAdded = storage.Todos.TryAdd(user, todoList);
-    if (!wasAdded)
-        return Results.StatusCode((int)HttpStatusCode.InternalServerError);
 
-    return Results.Ok(user);
-});
 
 app.MapGet("/messages", (SampleData data) => data.Data.Order());
 
@@ -68,7 +59,9 @@ RouteGroupBuilder userTodosGroup = app
         if (!userExists)
             return Results.NotFound("The user does not exists.");
         return await next(context);
-    });
+    })
+    .WithTags("Todos");
 
-app.MapEndpoints(typeof(CreateTodo).Namespace!, userTodosGroup);
+app.MapEndpointsFromNamespace(typeof(CreateTodo).Namespace!, userTodosGroup);
+app.MapRemainingEndpoints();
 app.Run();
